@@ -6,28 +6,36 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/13 15:37:17 by dabey             #+#    #+#             */
-/*   Updated: 2022/10/13 19:20:55 by dabey            ###   ########.fr       */
+/*   Updated: 2022/10/18 19:53:00 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-// char	*t_one_spcae(char *buffer)
-// {
-// 	int		i;
-// 	char	c;
+t_list	*ft_init(t_list *list)
+{
+	list = (t_list *)malloc(sizeof(t_list));
+	if (!list)
+	{
+		perror("Malloc failure");
+		return (0);
+	}
+	list->type = 0;
+	list->buffer = NULL;
+	list->cmd = NULL;
+	list->nb_quate = -1;
+	list->nb_db_quate = -1;
+	list->buf_size = 2048;
+	list->buffer = (char *)malloc(sizeof(char) * (list->buf_size));
+	if (!list->buffer)
+	{
+		perror("Malloc failure");
+		return (0);
+	}
+	return (list);
+}
 
-// 	c = ' ';
-// 	i = 0;
-// 	if (!buffer)
-// 		return (0);
-// 	while (buffer[i] && buffer[i] != c)
-// 		i++;
-// 	while
-	
-// }
-
-int	ft_strcmp(char *s1, char *s2)
+int ft_strcmp(char *s1, char *s2)
 {
 	size_t i;
 
@@ -43,9 +51,9 @@ int	ft_strcmp(char *s1, char *s2)
 	return (0);
 }
 
-static size_t	ft_len_w(char const *s, char c)
+static size_t ft_len_w(char const *s, char c)
 {
-	size_t	len_w;
+	size_t len_w;
 
 	len_w = 0;
 	while (*s != c && *s != '\0')
@@ -56,9 +64,9 @@ static size_t	ft_len_w(char const *s, char c)
 	return (len_w);
 }
 
-static size_t	ft_count_w(char const *s, char c)
+static size_t ft_count_w(char const *s, char c)
 {
-	size_t	count_w;
+	size_t count_w;
 
 	count_w = 0;
 	while (*s)
@@ -73,12 +81,12 @@ static size_t	ft_count_w(char const *s, char c)
 	return (count_w);
 }
 
-char	**ft_split(char *s, char c)
+char **ft_split(char *s, char c)
 {
-	size_t	i;
-	size_t	j;
-	size_t	count_w;
-	char	**tab;
+	size_t i;
+	size_t j;
+	size_t count_w;
+	char **tab;
 
 	i = 0;
 	if (!s)
@@ -90,7 +98,7 @@ char	**ft_split(char *s, char c)
 	while (i < count_w)
 	{
 		j = 0;
-		while (*s == ' ' || *s == c)
+		while (*s == ' ' || *s == c)//(list->nb_quate <= 0) && (list->nb_db_quate <= 0)
 			s++;
 		tab[i] = (char *)malloc(sizeof(char) * (ft_len_w(s, c) + 1));
 		if (!tab[i])
@@ -100,7 +108,6 @@ char	**ft_split(char *s, char c)
 			while (*s && *s == ' ' && *(s - 1) == ' ')
 			{
 				s++;
-				// printf("s - 1 = |%c|\t", *(s - 1));
 			}
 			tab[i][j++] = *s++;
 			while (*s && *s == ' ' && *(s - 1) == ' ')
