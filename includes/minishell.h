@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/13 15:47:59 by dabey             #+#    #+#             */
-/*   Updated: 2022/10/18 19:41:04 by dabey            ###   ########.fr       */
+/*   Updated: 2022/10/21 18:19:43 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <errno.h>
+# include <readline/readline.h>
+# include <readline/history.h>
 
 typedef	enum	e_type
 {
@@ -30,12 +32,13 @@ typedef	enum	e_type
 typedef struct s_list
 {
 	enum_type		type;
-	char		*buffer;
-	char		**cmd;
-	size_t		buf_size;
-	int			nb_quate; // = -1 si ya pas et nb si y on a
-	int			nb_db_quate; // = -1 si ya pas 
-}t_list;
+	char			*buffer;
+	char			**cmd;
+	size_t			buf_size;
+	struct s_list	*next;
+	int				nb_quate; // = -1 si ya pas et nb si y on a
+	int				nb_db_quate; // = -1 si ya pas 
+}	t_list;
 
 //***********************ft_uils********************
 t_list	*ft_init(t_list *list);
