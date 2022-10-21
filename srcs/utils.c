@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/13 15:37:17 by dabey             #+#    #+#             */
-/*   Updated: 2022/10/18 19:53:00 by dabey            ###   ########.fr       */
+/*   Updated: 2022/10/21 20:22:41 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ char **ft_split(char *s, char c)
 	while (i < count_w)
 	{
 		j = 0;
-		while (*s == ' ' || *s == c)//(list->nb_quate <= 0) && (list->nb_db_quate <= 0)
+		while (*s == ' ' || *s == c)
 			s++;
 		tab[i] = (char *)malloc(sizeof(char) * (ft_len_w(s, c) + 1));
 		if (!tab[i])
@@ -106,9 +106,7 @@ char **ft_split(char *s, char c)
 		while (*s != c && *s != '\0')
 		{
 			while (*s && *s == ' ' && *(s - 1) == ' ')
-			{
 				s++;
-			}
 			tab[i][j++] = *s++;
 			while (*s && *s == ' ' && *(s - 1) == ' ')
 				s++;
@@ -118,3 +116,17 @@ char **ft_split(char *s, char c)
 	tab[i] = 0;
 	return (tab);
 }
+
+	/*
+	char **cmd;
+	while(i < count_w + 1)
+	{
+		cmd = split(tab[i], ' ');
+		checkcmdtype(cmd) --> verifier le premier arg pour voir si = a une cmd
+		--> si oui lance fonction associee
+		free(cmd)
+		i++;
+	}
+	
+	*/
+	// tab = ft_split_arg(tab);
