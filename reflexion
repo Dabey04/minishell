@@ -1,0 +1,197 @@
+bufffer = ls -la | echo coucou 
+cmd_t = ls -la
+		echo coucou
+		pwd
+int = 0
+i = 0;
+while(cmd_t[i] != 0)
+{
+	new->cmd = ft_split(cmd_t[i]);
+	new->next = NULL;
+	i++;
+}
+- UTILISER un lexer pour parser la commande
+
+
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   minishell.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/10/06 17:05:27 by dabey             #+#    #+#             */
+/*   Updated: 2022/10/21 20:45:23 by dabey            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../includes/minishell.h"
+
+void	free_list_philo(t_list *list)
+{
+	t_list	*tmp;
+
+	tmp = list;
+	while (list != NULL)
+	{
+		tmp = list;
+		list = list->next;
+		free(tmp);
+	}
+}
+
+t_list	*ft_new_philo(char *cmd_i)
+{
+	t_list	*new;
+
+	new = (t_list *)malloc(sizeof(t_list));
+	if (!new)
+		return (NULL);
+	new->cmd = ft_split(cmd_i, ' ');
+	new->next = NULL;
+	// printf("ok_1\n");
+	return (new);
+}
+
+t_list	*ft_add_node(t_list *list, char *cmd_i)
+{
+	t_list	*head;
+	t_list	*new;
+
+	head = NULL;
+	new = ft_new_philo(cmd_i);
+	if (!(list))
+		list = new;
+	else
+	{
+		head = list;
+		while (head->next != NULL)
+			head = head->next;
+		head->next = new;
+	}
+
+	return (list);
+}
+
+int	main(void)
+{
+	int			j;
+	int			i;
+	t_list		*list;
+	t_list		*tmp;
+	char		*buffer;
+	char		**str_cmd;
+
+	buffer = NULL;
+	list = NULL;
+	str_cmd = NULL;
+	// list = ft_init(list);
+	while ((buffer = readline("Minishell$> ")) > 0)
+	{
+		i = 0;
+		str_cmd = ft_split(buffer, '|');
+		while(str_cmd[i] != 0)
+		{
+			list = ft_add_node(list, str_cmd[i]);
+			i++;
+		}
+		free(buffer);
+		tmp = list;
+		while (tmp != 0)
+		{
+			j = 0;
+			while (list->cmd[j] != 0)
+			{
+				printf("cmd = %s\n",list->cmd[j]);
+				j++;
+			}
+			tmp = tmp->next;
+		}
+	}
+	return (0);
+}
+//test     "coucou" bonjour "salut ca va?"    oui "super     moi | aussi"    "yes
+
+	// list = ft_init(list);
+	//if (strcmp(cmd[i], "exit") == 0)
+	//	exit(0);
+///////////////////////////////////////////////////////////////
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   minishell.h                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/10/13 15:47:59 by dabey             #+#    #+#             */
+/*   Updated: 2022/10/21 18:19:43 by dabey            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef MINISHELL_H
+# define MINISHELL_H
+
+# include <stdio.h>
+# include <stdlib.h>
+# include <unistd.h>
+# include <errno.h>
+# include <readline/readline.h>
+# include <readline/history.h>
+
+typedef	enum	e_type
+{
+	WORD = 1,
+	QUATE = 2,
+	COMMANDE = 3,
+	ARG = 4,
+	OPTION = 5,
+}enum_type;
+
+typedef struct s_list
+{
+	enum_type		type;
+	char			*buffer;
+	char			**cmd;
+	size_t			buf_size;
+	struct s_list	*next;
+	int				nb_quate; // = -1 si ya pas et nb si y on a
+	int				nb_db_quate; // = -1 si ya pas 
+}	t_list;
+
+//***********************ft_uils********************
+t_list	*ft_init(t_list *list);
+char	**ft_split(char *s, char c);
+int		ft_strcmp(char *s1, char *s2);
+
+#endif
+//////////////////////////////////////////////////
+
+NAME			=	minishell
+
+SRCS			=	srcs/minishell.c \
+					srcs/utils.c \
+
+OBJS			=	${SRCS:.c=.o}
+
+CC				=	clang #-Weverything -fsanitize=thread -g
+
+CFLAGS			= -Wall -Werror -Wextra
+
+.c.o			:
+					${CC} ${CFLAGS} -c $< -o ${<:.c=.o}
+
+$(NAME)			:	${OBJS}
+					${CC} ${OBJS} -o ${NAME} -lreadline
+
+all				:	${NAME}
+
+clean			:
+					@rm -rf ${OBJS}
+
+fclean			:	clean
+					@rm -rf ${NAME}
+
+re				:	fclean all
+
+.PHONY			:	all clean fclean re

@@ -7,13 +7,13 @@ OBJS			=	${SRCS:.c=.o}
 
 CC				=	clang #-Weverything -fsanitize=thread -g
 
-CFLAGS			=	-Wall -Werror -Wextra
+CFLAGS			= -Wall -Werror -Wextra
 
 .c.o			:
 					${CC} ${CFLAGS} -c $< -o ${<:.c=.o}
 
 $(NAME)			:	${OBJS}
-					${CC} ${OBJS} -o ${NAME}
+					${CC} ${OBJS} -o ${NAME} -lreadline
 
 all				:	${NAME}
 
