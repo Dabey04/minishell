@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 17:05:27 by dabey             #+#    #+#             */
-/*   Updated: 2022/11/28 16:54:55 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/10 20:22:48 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void	free_list(t_list *list)
 	}
 }
 
-t_list	*ft_new_node(char *cmd_i, char *buffer)
+t_list	*ft_new_node(char *cmd_i, char *buffer, t_envlist *first)
 {
 	t_list	*new;
 
@@ -52,19 +52,26 @@ t_list	*ft_new_node(char *cmd_i, char *buffer)
 	if (!new)
 		return (NULL);
 	new->buffer = buffer;
-	new->cmd = ft_split_quote(cmd_i, ' ');
+	new->cmd = split2(cmd_i, ' ');
+	new->envlist = first;
+		int k = 0;
+		while (new->cmd[k])
+		{
+			printf("space ==== <%s>\n",new->cmd[k]);
+			k++;
+		}
 	// new->cmd = ft_split(cmd_i, ' ');
 	new->next = NULL;
 	return (new);
 }
 
-t_list	*ft_add_node(t_list *list, char *cmd_i, char *buffer)
+t_list	*ft_add_node(t_list *list, char *cmd_i, char *buffer, t_envlist *envlist_first)
 {
 	t_list	*head;
 	t_list	*new;
 
 	head = NULL;
-	new = ft_new_node(cmd_i, buffer);
+	new = ft_new_node(cmd_i, buffer, envlist_first);
 	if (!(list))
 		list = new;
 	else
@@ -80,88 +87,120 @@ t_list	*ft_add_node(t_list *list, char *cmd_i, char *buffer)
 
 int	main(int argc, char **argv, char **env)
 {
-	int			j;
+	// int			j;
 	int			i;
 	t_list		*list;
 	t_list		*tmp;
 	char		*buffer;
 	char		**str_cmd;
-	t_envlist	*envlist;
-	t_envlist	*tempo;
+	t_envlist	*envlist_first;
+	char		*tempoline;
+	// char		**tempotab;
 
 	(void)argc;
 	(void)argv;
 	buffer = NULL;
 	list = NULL;
 	str_cmd = NULL;
-	envlist = NULL;
+	// list->envlist = NULL;
+	tempoline = NULL;
 	using_history();
-	envlist = make_env(env);
+	envlist_first = make_env(env, list);
 	while ((buffer = readline("Minishell$> ")) > 0 && ft_strcmp(buffer, "exit") != 0)
 	{
 		add_history(buffer);
 		if (check_basic_error(buffer) != 1)
 		{
-			free_list_env(envlist);
+			free_list_env(list->envlist);
 			free_list(list);
 			return (0);
 		}
 		// buffer = manip_quote_buffer(buffer);
-		str_cmd = ft_split_quote(buffer, '|');
+		str_cmd = ft_split_pipe(buffer, '|');
+		list = replace_dollar(list);
 		int k = 0;
 		while (str_cmd[k])
 		{
-			printf("pipe ==== %s\n", str_cmd[k]);
+			printf("pipe ==== <%s>\n", str_cmd[k]);
 			k++;
 		}
 		i = 0;
 		while(str_cmd[i] != 0)
 		{
-			list = ft_add_node(list, str_cmd[i], buffer);
+			list = ft_add_node(list, str_cmd[i], buffer, envlist_first);
 			i++;
 		}
-		if(buffer[0] == '$')
-		{
-			tempo = NULL;
-			if (buffer[1] == '?')
-				printf("%d\n", g_status);
-			else
-				tempo = get_env_line(envlist, buffer);		//free tempo?
-		 }
+		freetab(str_cmd);
 		
+		// if(buffer[0] == '$')
+		// {
+		// 	tempo = NULL;
+		// 	if (buffer[1] == '?')
+		// 		printf("%d\n", g_status);
+		// 	else
+		// 		tempo = get_env_line(list->envlist, buffer);		//free tempo?
+		// }
+		//else 
 		if(ft_strcmp(buffer, "env") == 0)
-			printlist(envlist, 0);
-
-		if(buffer[0] == 'u' && buffer[1] == 'n' && buffer[2] == 's' && buffer[3] == 'e' &&
+			printlist(list->envlist, 0);
+		else if(ft_strcmp(buffer, "pwd") == 0)
+		{
+			tempoline = built_in_pwd();
+			if (tempoline != NULL)
+			{
+				printf("%s\n", tempoline);
+				free (tempoline);
+			}
+			g_status = 0;
+		}
+		else if (buffer[0] == 'u' && buffer[1] == 'n' && buffer[2] == 's' && buffer[3] == 'e' &&
 		buffer[4] == 't' && buffer[5] == ' ')
 		{
-			envlist = unset_line(ft_substr(buffer, 6, ft_strlen(buffer) - 5), envlist);
+			list->envlist = unset_line(ft_substr(buffer, 6, ft_strlen(buffer) - 5), list->envlist);
 		}
-		if(buffer[0] == 'e' && buffer[1] == 'x' && buffer[2] == 'p' && buffer[3] == 'o' &&
+		else if(buffer[0] == 'e' && buffer[1] == 'x' && buffer[2] == 'p' && buffer[3] == 'o' &&
 		 buffer[4] == 'r' && buffer[5] == 't' && (buffer[6] == ' ' || ft_strlen(buffer) == 6))
 		{
-			envlist = built_in_export(envlist, buffer);
+			list->envlist = built_in_export(list->envlist, buffer);
 		}
+		else if(buffer[0] == 'c' && buffer[1] == 'd' && buffer[2] == ' ')
+		{
+			list->envlist = built_in_cd(list->envlist, buffer);
+		}
+		else
+			exec(buffer,/*, envlist,*/ env); //gerer si env est vide... // SHLVL quand ./minishell
 		free(buffer);
 		tmp = list;
-		while (tmp != 0)
-		{
-			printf("\nnode :\t");
-			j = 0;
-			while (tmp->cmd[j] != 0)
-			{
-				printf("cmd = %s\t",tmp->cmd[j]);
-				j++;
-			}
-			printf("\n");
-			tmp = tmp->next;
-		}
+		// while (tmp != 0)
+		// {
+		// 	printf("\nnode :\t");
+		// 	j = 0;
+		// 	while (tmp->cmd[j] != 0)
+		// 	{
+		// 		printf("cmd = %s.\t",tmp->cmd[j]);
+		// 		j++;
+		// 	}
+		// 	printf("\n");
+		// 	tmp = tmp->next;
+		// }
+		envlist_first = list->envlist;
 		free_list(list);
 		list = NULL;
         }
+
+
+		// i = 0;
+		// while (env[i])
+		// {
+		// 	printf("La ligne %d de env est: .%s.\n\n", i, env[i]);
+		// 	i++;
+		// }
+
+		
         // free_history_entry();
-		free_list_env(envlist);
+//		free(list.shlvl_line);
+		free_list_env(envlist_first);
         printf("exit : Good bye\n");
-        // free_list(list);
+        //free_list(list);
         return (0);
 }

@@ -48,6 +48,8 @@ void	printlistenv(t_envlist *list)
 	int			equal;
 
 	tempo = list;
+	if(!list)                //nouveau
+	 	return ;
 	while (list != NULL && list->next != NULL)
 	{
 		if (list->line)
@@ -97,7 +99,7 @@ void	printlist(t_envlist *list, int type)
 
 	if (type == 0)
 		printlistenv(list);
-	else
+	else if (list)
 	{
 		tempo = list;
 		while (list != NULL && list->next != NULL)
@@ -113,7 +115,105 @@ void	printlist(t_envlist *list, int type)
 }
 //segfault si il n'y a pas d'env a recup attention
 
-t_envlist	*make_env(char **env)
+// Voilà la liste des variables qui seront ajoutées si elle n’existe pas dans envp :
+
+//     PATH : Pour avoir la liste des dossiers ou chercher les binaires a exécuter
+//     HOME : Pour connaitre ou est notre home :D
+//     OLDPWD : Pour connaitre le dossier dans lequel nous etions
+//     PWD : Pour connaitre le path actuelle
+//     SHLVL : Pour savoir combien de shell nous avons lancer
+
+void	change_env_shlvl(char **env, t_list *list)
+{
+	char	*string;
+	char	*result;
+	int		i;
+	int		j;
+
+	i = 0;
+	j = 0;
+	string = "SHLVL=";
+	result = NULL;
+	while(env[i])
+	{
+		while(env[i][j])
+		{
+			if (env[i][j] == string[j])
+				j++;
+			else
+				break ;		
+		}
+		if (j == 6)
+		{
+			result = env[i];
+			break ;
+		}
+		j = 0;
+		i++;
+	}
+	//printf ("\nRESULT EST EGAL A = .%s.\n\n", result);
+
+	//SANS MALLOC
+	j = ft_strlen(result);
+	env[i][j - 1] = env[i][j - 1] + 1;
+//	printf("ENV[i] = %s\n", env[i]);
+
+	//AVEC MALLOC
+//	list->shlvl_line = NULL;
+	// if (result)
+	// {
+	// 	string = cutline(result);
+	// 	j = ft_atoi(string);
+	// 	free(string);
+	// 	j++;
+	// 	string = ft_itoa(i);
+	// 	result = ft_strjoin("SHLVL=", string);
+	// 	free(string);
+	// }
+	// env[i] = result;
+	// list->shlvl_line = env[i];
+	(void)list;
+
+	// printf ("\nRESULT EST EGAL A = .%s.\n\n", result);
+	// i = 0;
+	// while (env[i])
+	// {
+	// 	printf("La ligne %d de env est: .%s.\n\n", i, env[i]);
+	// 	i++;
+	// }
+}
+
+t_envlist	*change_shlvl(t_envlist *envlist, t_list *list, char **env)
+{
+	char		*line_value;
+	char		*joinline;
+	t_envlist	*tempo;
+	int			value;
+
+	change_env_shlvl(env, list);
+	tempo = envlist;
+	envlist = findline(envlist, "$SHLVL");
+	if (envlist)
+	{
+		line_value = cutline(envlist->line);
+		line_value = removequote(line_value);
+		value = ft_atoi(line_value);
+		free(line_value);
+		value++;
+		line_value = ft_itoa(value);
+		joinline = ft_strjoin("export SHLVL=", line_value);
+		free(line_value);
+		envlist = tempo;
+		envlist = built_in_export(envlist, joinline);
+		free(joinline);
+		return (envlist);
+	}
+	else
+		tempo = built_in_export(tempo, "export SHLVL=1");
+	return (tempo);
+}
+
+t_envlist	*make_env(char **env, t_list *list)
 {
 	int			i;
 	char		*addquoteline;
@@ -127,10 +227,12 @@ t_envlist	*make_env(char **env)
 	{
 		addquoteline = addquote(env[i]);
 		envlist = ft_add_env(envlist,
-				ft_strjoin("declare -x ", addquoteline), 1);
+		ft_strjoin("declare -x ", addquoteline), 1);
 		free(addquoteline);
 		i++;
 	}
+	envlist = change_shlvl(envlist, list, env);
+//	list->envlist = envlist;
 	return (envlist);
 }
 //segfault si il n'y a pas d'env a recup attention
@@ -156,7 +258,7 @@ void	free_list_env(t_envlist *list)
 }
 
 
-//export yesssssss testencore=oui ===non 64663 non=oui
+//export yesssssss testencore=oui ===non 64663 non=oui!
 
 
 /*
@@ -208,5 +310,18 @@ $$
 $?
 $!
 
+EXPORT NE MARCHE PAS SI  vide et lance au'un seul mot 
+export yes   -> fais rien tant qu'une valeur avec = pas ajoutee
+faire unset avec plusieurs arguments
+export test
+export test=coucou
+export test -> cense garder coucocu et pas le remplacer
 
+INVALID READ LORSQUE UNSET 3 VARIABLES (les 3 premieres)
+
+faire env apres avoir unset toute la liste
+
+CHANGER GET ENV LINE POUR QU'IL RETOURNE UN CHAR*
+CUTINE VIRE PAS LES ""
+rajouter les retour d'erreur pour unset et les autres built in
 */

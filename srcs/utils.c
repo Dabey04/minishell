@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/13 15:37:17 by dabey             #+#    #+#             */
-/*   Updated: 2022/11/26 15:28:23 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/08 15:41:45 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,30 @@ t_list	*ft_init(t_list *list)
 	}
 	return (list);
 }
+
+// int	ft_isdigit(int c)
+// {
+// 	if (c >= '0' && c <= '9')
+// 		return (1);
+// 	else
+// 		return (0);
+// }
+
+// int	ft_isalpha(int c)
+// {
+// 	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+// 		return (1);
+// 	else
+// 		return (0);
+// }
+
+// int	ft_isalnum(int c)
+// {
+// 	if (ft_isdigit(c) || ft_isalpha(c))
+// 		return (1);
+// 	else
+// 		return (0);
+// }
 
 int	ft_strcmp(char *s1, char *s2)
 {
@@ -87,7 +111,7 @@ char	**ft_split(char *s, char c)
 	i = 0;
 	if (!s)
 		return (NULL);
-	count_w = ft_count_w(s, c);
+	count_w = ft_count_word(s, c);
 	tab = (char **)malloc((count_w + 1) * sizeof(char *));
 	if (!(tab))
 		return (0);
@@ -96,7 +120,7 @@ char	**ft_split(char *s, char c)
 		j = 0;
 		while (*s == ' ' || *s == c)
 			s++;
-		tab[i] = (char *)malloc(sizeof(char) * (ft_len_w(s, c) + 1));
+		tab[i] = (char *)malloc(sizeof(char) * (ft_len_word(s, c) + 1));
 		if (!tab[i])
 			return (0);
 		while (*s != c && *s != '\0')

@@ -52,6 +52,8 @@ t_envlist	*findline(t_envlist *envlist, char *line)
 	int		i;
 	int		lenline;
 
+	if (line == NULL || envlist == NULL)
+		return (NULL);
 	lenline = ft_strlen(line);
 	while (envlist != NULL && envlist->next != NULL)
 	{
@@ -79,6 +81,7 @@ char	*cutline(char *line)
 	int	i;
 
 	i = 0;
+//	printf("Line dans cutline = %s\n\n", line);
 	if (line == NULL)
 		return (NULL);
 	while (line[i] && line[i] != '=')
@@ -87,13 +90,14 @@ char	*cutline(char *line)
 }
 //gerer un retour NULL? renvoyer "" 
 //attention retour null probablement pas gere partout
-
-t_envlist	*get_env_line(t_envlist *envlist, char *line)
+/*
+char	*get_env_line(t_envlist *envlist, char *line)
 {
 	t_envlist	*tempo;
 	int			lenline;
 	char		*lineresult;
 
+	lineresult = NULL;
 	lenline = ft_strlen(line);
 	tempo = envlist;
 	envlist = findline(envlist, line);
@@ -101,9 +105,71 @@ t_envlist	*get_env_line(t_envlist *envlist, char *line)
 	{
 		lineresult = cutline(envlist->line);
 		printf("LINERESULT = %s\n", lineresult);
+	}
+	free(line);
+	return (lineresult);
+}
+*/
+t_envlist	*get_env_line(t_envlist *envlist, char *line)
+{
+	t_envlist	*tempo;
+	int			lenline;
+	char		*lineresult;
+
+	lenline = ft_strlen(line); //useless?
+	tempo = envlist;
+	envlist = findline(envlist, line);//pas besoin de malloc line
+	if (envlist)
+	{
+		lineresult = cutline(envlist->line);
+//		lineresult = removequote(lineresult);
+		printf("LINERESULT = %s\n", lineresult);
 		free(lineresult);
 	}
+	envlist = tempo;
 	return (envlist);
+}
+
+char	*removequote(char *line)
+{
+	char	*tempo;
+	int		lenline;
+
+	lenline = ft_strlen(line);
+	tempo = line;
+	if (lenline >= 3)
+	{
+ 		line = ft_substr(line, 1, lenline - 2);
+		free(tempo);
+	}
+	return (line);
 }
 //verifier cas avec plusieurs = ou sans = ?? ou  = des le debut ou des la fin
 //segfault si $shell (existe pas)
+
+
+// NAME=THEO
+
+// je suis $NAME bonjour
+
+// {
+//     while (pas $)
+//     i++;
+
+// i = 8;
+
+// -> tant ae pas d'espace tu recupere jusqua avoir la variable complete (ici $NAME)
+
+// -> $NAME
+// -> THEO
+
+// ------------
+// tempo = $NAME;
+// buffer = je suis $NAME bonjour
+// i = 8;
+// variable = THEO
+
+// buffer = join (7 premie char de buffer, variable) -> je suis THEO
+// buffer = join (buffer, buffer + strlen(tempo)) -> je suis THEO bonjour
+
+// } --> boucle tant qu'il y a des $ a remplacer dans la commande

@@ -19,15 +19,15 @@ int	checkvariable(char *line) //gerer les $?
 	int	i;
 
 	i = 0;
-	if (line[i] == '=')
-		return (1);
-	while (line[i] && line[i] != '=')
-	{
+	// if (line[i] == '=')
+	// 	return (1);
+	// while (line[i] && line[i] != '=')
+	// {
 		if (line[i] != '_' && (line[i] < 65 || line[i] > 90)
 			&& (line[i] < 97 || line[i] > 122))
 			return (1);
-		i++;
-	}
+	// 	i++;
+	// }
 	return (0);
 }
 
@@ -35,19 +35,20 @@ t_envlist *built_in_export(t_envlist *envlist, char *line)
 {
 	char		**variables;
 	char		*tempo;
-	t_envlist	*tempolist;
 	char		*quoteline;
 	int			i;
 	int			j;
 
 	i = 0;
 	j = 0;
+
 	if (ft_strrchr(line, ' ') == 0)//ATTENTION FONCTIONNE MEME AVEC PLEINS DE ' ' APRES
 		printlist(envlist, 1);
 	else
 	{
-		i = 1;
+		i = 1; // A MODIFIER PLUS TARD 
 		variables = ft_split(line, ' ');
+		//free(line);   // free necessaire? 
 		while (variables[i])
 		{
 			if (checkvariable(variables[i]) == 1)
@@ -71,15 +72,18 @@ t_envlist *built_in_export(t_envlist *envlist, char *line)
 			}
 			else
 			{
-				tempo = ft_substr(variables[i], 0, ft_strlen(variables[i]));
-				tempolist = unset_line(tempo, envlist);
-				if (tempolist != NULL)
+				tempo = ft_strjoin("$", variables[i]);
+				if (!(findline(envlist, tempo)))
 				{
-					envlist = tempolist;
+					if (tempo)
+						free(tempo);
 					tempo = ft_strjoin("declare -x ", variables[i]);
 					envlist = ft_add_env(envlist, tempo, 1);
 					g_status = 0;
 				}
+				else
+					if (tempo)
+						free(tempo);
 			}
 			i++;
 		}
@@ -87,6 +91,11 @@ t_envlist *built_in_export(t_envlist *envlist, char *line)
 	}
 	return (envlist);
 }
+
+
+// Minishell$> export " test"=oui
+// bash: export: `"': not a valid identifier
+// bash: export: `test"=oui': not a valid identifier
 
 char	*addquote(char *line)
 {

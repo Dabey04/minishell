@@ -79,36 +79,50 @@ char	*ft_strjoin(char const *s1, char const *s2)
 t_envlist	*unset_line(char *buffer, t_envlist *envlist)
 {
 	char		*tempo;
+	int			i;
+	char		**args;
 	t_envlist	*tempolist;
 	t_envlist	*goodlist;
 	t_envlist	*firstlist;
 
-	firstlist = envlist;
-	tempo = ft_strjoin ("$", buffer);
-	goodlist = findline(envlist, tempo);
+	i = 0;
+	args = ft_split(buffer, ' ');
 	free(buffer);
-	free(tempo);
-	if (goodlist == NULL)
-		return (firstlist);
-	if (envlist == goodlist)
+	firstlist = envlist;
+
+	while (args[i])
 	{
-		tempolist = envlist;
-		if (envlist->created == 1)
-			free(envlist->line);
-		envlist = envlist->next;
-		free(tempolist);
-		return (envlist);
+		tempo = ft_strjoin ("$", args[i]);
+		goodlist = findline(envlist, tempo);
+		free(tempo);
+		if (goodlist/* == NULL*/)
+		{//	return (firstlist);
+			if (envlist == goodlist)
+			{
+				tempolist = envlist;
+				if (envlist->created == 1)
+					free(envlist->line);
+				envlist = envlist->next;
+				free(tempolist);
+				firstlist = envlist;
+			}
+			else
+			{
+				while (envlist->next && envlist->next != goodlist)
+					envlist = envlist->next;
+				if (envlist->next == goodlist)
+				{
+					tempolist = envlist->next;
+					if (envlist->next->created == 1)
+						free(envlist->next->line);
+					envlist->next = envlist->next->next;
+					free(tempolist);
+//					return (firstlist);
+				}
+			}
+		}
+		i++;
 	}
-	while (envlist->next && envlist->next != goodlist)
-		envlist = envlist->next;
-	if (envlist->next == goodlist)
-	{
-		tempolist = envlist->next;
-		if (envlist->next->created == 1)
-			free(envlist->next->line);
-		envlist->next = envlist->next->next;
-		free(tempolist);
-		return (firstlist);
-	}
+	freetab(args);
 	return (firstlist);
 }

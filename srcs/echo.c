@@ -101,16 +101,6 @@ void    built_in_echo(char **line, int linelength)
         free(line[linelength - 1]); //free tab normalement
 }
 
-void    built_in_pwd()
-{
-    char    buffer[FILENAME_MAX];  //marche si on supprime env?? 
-
-    if (getcwd(buffer, sizeof(buffer)) != NULL) 
-	       printf("%s\n", buffer); //free? 
-	else
-	    perror("getcwd()"); //voir les retours d'erreur
-}
-
 void    built_in_exit()
 {
 	//printf exit
@@ -126,7 +116,6 @@ int main (int argc, char **argv)
         built_in_exit();
     else
         built_in_echo(argv, argc);
-//    printf("TESt\n");
     return (0);
 }
 
