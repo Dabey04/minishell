@@ -7,8 +7,11 @@ SRCS			=	srcs/minishell.c \
 					srcs/parser.c \
 					srcs/dollars.c \
 					srcs/unset.c \
-					srcs/split_func.c \
-					srcs/split_space_utils.c 
+					srcs/split_pipe.c\
+					srcs/split_space.c \
+					srcs/command.c \
+					srcs/execution.c \
+					srcs/itoa.c
 
 OBJS			=	${SRCS:.c=.o}
 
