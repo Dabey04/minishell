@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/13 15:47:59 by dabey             #+#    #+#             */
-/*   Updated: 2022/12/10 20:47:50 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/13 17:29:56 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ typedef struct s_list
 	char			*shlvl_line;
 }	t_list;
 
-char **split2(char *s, char c);
 
 // ***********************ft_utils*******************************
 // t_list		*ft_init(t_list *list);
@@ -120,8 +119,9 @@ int			check_basic_error(char *buffer);
 char		**ft_split_pipe(char *buffer, char c);
 
 // //**********************split_pipe***********************
-t_list		*replace_dollar(t_list *list);
-char		*find_dollar(t_list *list, char *line);
+char		**split2(char *s, char c);
+t_list		*expand_dollar(t_list *list);
+t_envlist	*find_dollar(t_envlist *list, char *line);
 // int			lenght_of_word(char *s, char sep);
 // int			ft_count_word(char *s, char sep);
 // char		**ft_split_space(char *s, char c);
