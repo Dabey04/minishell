@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 17:05:27 by dabey             #+#    #+#             */
-/*   Updated: 2022/12/10 20:22:48 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/13 18:24:34 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,12 +54,12 @@ t_list	*ft_new_node(char *cmd_i, char *buffer, t_envlist *first)
 	new->buffer = buffer;
 	new->cmd = split2(cmd_i, ' ');
 	new->envlist = first;
-		int k = 0;
-		while (new->cmd[k])
-		{
-			printf("space ==== <%s>\n",new->cmd[k]);
-			k++;
-		}
+		// int k = 0;
+		// while (new->cmd[k])
+		// {
+		// 	printf("space ==== <%s>\n",new->cmd[k]);
+		// 	k++;
+		// }
 	// new->cmd = ft_split(cmd_i, ' ');
 	new->next = NULL;
 	return (new);
@@ -117,13 +117,13 @@ int	main(int argc, char **argv, char **env)
 		}
 		// buffer = manip_quote_buffer(buffer);
 		str_cmd = ft_split_pipe(buffer, '|');
-		list = replace_dollar(list);
-		int k = 0;
-		while (str_cmd[k])
-		{
-			printf("pipe ==== <%s>\n", str_cmd[k]);
-			k++;
-		}
+		list = expand_dollar(list);
+		// int k = 0;
+		// while (str_cmd[k])
+		// {
+		// 	printf("pipe ==== <%s>\n", str_cmd[k]);
+		// 	k++;
+		// }
 		i = 0;
 		while(str_cmd[i] != 0)
 		{

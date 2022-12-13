@@ -55,10 +55,10 @@ t_envlist	*findline(t_envlist *envlist, char *line)
 	if (line == NULL || envlist == NULL)
 		return (NULL);
 	lenline = ft_strlen(line);
-	while (envlist != NULL && envlist->next != NULL)
+	while (envlist != NULL && envlist->next != NULL)// une condition en moins ??
 	{
 		i = 0;
-		while (envlist->line[i + 11] && envlist->line[i + 11] == line[i + 1])
+		while (envlist->line[i + 11] && envlist->line[i + 11] == line[i])
 			i++;
 		if (i == lenline - 1 && i == whereend(envlist->line) - 11)
 			return (envlist);

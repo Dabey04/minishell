@@ -6,64 +6,97 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 22:01:32 by dabey             #+#    #+#             */
-/*   Updated: 2022/12/10 20:57:35 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/13 18:03:45 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-// git commit -m "correction de la fonction ft_count_word"
-// "test" hello  | toto     titi | cat 'ls - la'
 
-char	*find_dollar(t_list *list, char *line)
+int			is_quote_replace(char *line, int i)
+{
+	int		k;
+	char	quote;
+	char	db_quote;
+
+	k = i;
+	printf("line + i = %s\n", line);
+	while (line[k] && line[k] != '$' && k < i)
+	{
+		while (line[k] && line[k] != '$' && line[k] != '\'' && line[k] != '\"')
+			k++;
+		if (line[k] && (line[k] == '\'' || line[k] == '\"'))
+		{
+			if (line[k] == '\'')
+				quote = '\'';
+			else db_quote = '\"';
+			k++;
+		}
+		// if (line[k] && line[k] == '$' && quote)
+
+	}
+	return (0);// a revoir
+}
+
+t_envlist	*find_dollar(t_envlist *envlist, char *line)
 {
 	int			i;
 	int			j;
-	int			k; 
-	char		str_d;
-	t_envlist	*envlist;
+	int			k;
+	int			replace;
+	char		*str_d;
+	t_envlist	*envline;
 
 	i = 0;
 	j = 0;
 	k = 0;
 	str_d = NULL;
+	envline = NULL;
 	while (line[i])
 	{
+		replace = 0;
 		if (line[i] == '$')//test "$HOME"
 		{
-			j = i;// i = 7  
-			while (line[++j] != ' ')// && line[++j] != '\'' && line[++j] != '\"')
-				j++;//j = 11;
-			str_d = malloc(sizeof(char) * (j - i) + 1);
-			j = i;
-			while (line[++j] != ' ' && line[++j] != '\''
-				&& line[++j] != '\"')
-				str_d[k++] = line[j++];
-			str_d[k] = '\0';	
-			envlist = findline(list ,str_d);
-			return (str_d);
+			if (is_quote_replace(line, i))
+			{
+				// replace = 1;
+				j = ++i;// i = 7  
+				while (line[j] && line[j] != ' ')// && line[++j] != '\'' && line[++j] != '\"')
+					j++;//j = 11;
+				str_d = malloc(sizeof(char) * (j - i) + 1);
+				j = i;
+				while (line[j] && line[j] != ' ')
+					str_d[k++] = line[j++];
+				str_d[k] = '\0';	
+				envline = findline(envlist ,str_d);
+			}
 		}
 		i++;
 	}
-	return (str_d);
+	return (envline);
 }
 
-t_list	*replace_dollar(t_list *list)
+t_list	*expand_dollar(t_list *list)
 {
 	int			i;
-	char		str_d;
+	char		*str_d;
 	t_list		*tmp;
 	t_envlist	*envl;
 
 	if (list)
-		return;
-	i = 0;
+		return (NULL);
 	tmp = list;
-	while (list)
+	str_d = NULL;
+	while (tmp)
 	{
+		i = 0;
 		while (tmp->cmd[i])
-		envl = find_dollar(tmp->envlist, tmp->cmd[i]);
+		{
+			envl = find_dollar(list->envlist, tmp->cmd[i]);
+			i++;
+		}
 		tmp = tmp->next;
 	}
+	return (list);
 }
 
 int	ft_count_word(char *s, char sep)
