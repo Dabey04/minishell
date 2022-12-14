@@ -6,59 +6,95 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 22:01:32 by dabey             #+#    #+#             */
-/*   Updated: 2022/12/13 18:03:45 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/14 19:41:24 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-int			is_quote_replace(char *line, int i)
+char	*ft_new_cmd(char *line, char *str_d, int i, int j)
 {
-	int		k;
-	char	quote;
-	char	db_quote;
+	int 	k;
+	char	*str_1;
+	char	*str_2;
 
-	k = i;
-	printf("line + i = %s\n", line);
-	while (line[k] && line[k] != '$' && k < i)
-	{
-		while (line[k] && line[k] != '$' && line[k] != '\'' && line[k] != '\"')
-			k++;
-		if (line[k] && (line[k] == '\'' || line[k] == '\"'))
-		{
-			if (line[k] == '\'')
-				quote = '\'';
-			else db_quote = '\"';
-			k++;
-		}
-		// if (line[k] && line[k] == '$' && quote)
-
-	}
-	return (0);// a revoir
+	str_1 = NULL;
+	str_2 = NULL;
+	k = ft_strlen(line) - (j - i); // ft_strlen(line + j) ??
+	str_1 = ft_substr(line, 0, i - 1);//debut de line
+	str_2 = ft_strjoin(str_1, str_d);//debut + expand_dollar
+	free(str_d);
+	free(str_1);
+	str_d = ft_substr(line, j, k);//la fin de line
+	str_1 = ft_strjoin(str_2, str_d);//debut + expand_dollar + fin de line
+	free(str_2);
+	free(str_d);
+	free(line);
+	return (str_1);
 }
 
-t_envlist	*find_dollar(t_envlist *envlist, char *line)
+char	*get_env_line_dollar(t_envlist *envlist, char *str_d)
 {
-	int			i;
-	int			j;
-	int			k;
-	int			replace;
-	char		*str_d;
-	t_envlist	*envline;
+	int			lenline;
+	char		*lineresult;
+
+	lineresult = NULL;
+	lenline = ft_strlen(str_d); //useless?
+	envlist = findline(envlist, str_d);//pas besoin de malloc line
+	if (envlist)
+	{
+		lineresult = cutline(envlist->line);
+//		lineresult = removequote(lineresult);
+		printf("LINERESULT = %s\n", lineresult);
+	}
+	free(str_d);
+	return (lineresult);
+}
+
+char	first_quote(char *line, int i)
+{
+	int		j;
+	char	first_q;
+	
+	j = 0;
+	while(line[j] && j < i)
+	{
+		if (line[j] == '\'' || line[j] == '\"')
+		{
+			if (line[j] == '\'')
+				first_q = '\'';
+			else
+				first_q = '\"';
+			while (line[j] && j < i && line[j] != first_q)
+				j++;
+			if (line[j] == first_q)
+				first_q = 0;
+			else return (first_q);
+		}
+		j++;
+	}
+	return (0);
+}
+
+char	*find_expand_dollar(t_envlist *envlist, char *line)
+{
+	int		i;
+	int		j;
+	int		k;
+	char	*str_d;
 
 	i = 0;
 	j = 0;
 	k = 0;
 	str_d = NULL;
-	envline = NULL;
 	while (line[i])
 	{
-		replace = 0;
+		// replace = 0;
 		if (line[i] == '$')//test "$HOME"
 		{
-			if (is_quote_replace(line, i))
+			if (first_quote(line, i) == '\"'
+				|| first_quote(line, i) == 0) //faut il mettre '\0'
 			{
-				// replace = 1;
 				j = ++i;// i = 7  
 				while (line[j] && line[j] != ' ')// && line[++j] != '\'' && line[++j] != '\"')
 					j++;//j = 11;
@@ -66,37 +102,32 @@ t_envlist	*find_dollar(t_envlist *envlist, char *line)
 				j = i;
 				while (line[j] && line[j] != ' ')
 					str_d[k++] = line[j++];
-				str_d[k] = '\0';	
-				envline = findline(envlist ,str_d);
+				str_d[k] = '\0';
+				str_d = get_env_line_dollar(envlist ,str_d);
+				str_d = ft_new_cmd(line, str_d, i, j);
+				return (str_d);
 			}
 		}
 		i++;
 	}
-	return (envline);
+	return (str_d);
 }
 
-t_list	*expand_dollar(t_list *list)
+char	**expand_dollar(char **str_cmd, t_envlist *env)
 {
 	int			i;
 	char		*str_d;
-	t_list		*tmp;
-	t_envlist	*envl;
 
-	if (list)
+	if (!str_cmd)
 		return (NULL);
-	tmp = list;
+	i = 0;
 	str_d = NULL;
-	while (tmp)
+	while (str_cmd[i])
 	{
-		i = 0;
-		while (tmp->cmd[i])
-		{
-			envl = find_dollar(list->envlist, tmp->cmd[i]);
-			i++;
-		}
-		tmp = tmp->next;
+		str_cmd[i] = find_expand_dollar(env, str_cmd[i]);
+		i++;
 	}
-	return (list);
+	return (str_cmd);
 }
 
 int	ft_count_word(char *s, char sep)

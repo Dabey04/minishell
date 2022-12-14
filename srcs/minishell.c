@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 17:05:27 by dabey             #+#    #+#             */
-/*   Updated: 2022/12/13 18:24:34 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/14 19:46:23 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,11 @@ int	main(int argc, char **argv, char **env)
 	str_cmd = NULL;
 	// list->envlist = NULL;
 	tempoline = NULL;
+	if (argv[1] != NULL)
+	{
+		printf("error : too many arguments\n");
+		return(1);
+	}
 	using_history();
 	envlist_first = make_env(env, list);
 	while ((buffer = readline("Minishell$> ")) > 0 && ft_strcmp(buffer, "exit") != 0)
@@ -115,9 +120,8 @@ int	main(int argc, char **argv, char **env)
 			free_list(list);
 			return (0);
 		}
-		// buffer = manip_quote_buffer(buffer);
 		str_cmd = ft_split_pipe(buffer, '|');
-		list = expand_dollar(list);
+		str_cmd = expand_dollar(str_cmd, envlist_first);
 		// int k = 0;
 		// while (str_cmd[k])
 		// {
@@ -143,7 +147,7 @@ int	main(int argc, char **argv, char **env)
 		//else 
 		if(ft_strcmp(buffer, "env") == 0)
 			printlist(list->envlist, 0);
-		else if(ft_strcmp(buffer, "pwd") == 0)
+		/*else if(ft_strcmp(buffer, "pwd") == 0)
 		{
 			tempoline = built_in_pwd();
 			if (tempoline != NULL)
@@ -158,18 +162,18 @@ int	main(int argc, char **argv, char **env)
 		{
 			list->envlist = unset_line(ft_substr(buffer, 6, ft_strlen(buffer) - 5), list->envlist);
 		}
-		else if(buffer[0] == 'e' && buffer[1] == 'x' && buffer[2] == 'p' && buffer[3] == 'o' &&
+		else */if(buffer[0] == 'e' && buffer[1] == 'x' && buffer[2] == 'p' && buffer[3] == 'o' &&
 		 buffer[4] == 'r' && buffer[5] == 't' && (buffer[6] == ' ' || ft_strlen(buffer) == 6))
 		{
 			list->envlist = built_in_export(list->envlist, buffer);
-		}
+		}/*
 		else if(buffer[0] == 'c' && buffer[1] == 'd' && buffer[2] == ' ')
 		{
 			list->envlist = built_in_cd(list->envlist, buffer);
 		}
 		else
-			exec(buffer,/*, envlist,*/ env); //gerer si env est vide... // SHLVL quand ./minishell
-		free(buffer);
+			exec(buffer,env);//, envlist, env); //gerer si env est vide... // SHLVL quand ./minishell
+		*/free(buffer);
 		tmp = list;
 		// while (tmp != 0)
 		// {
