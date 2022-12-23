@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 17:05:27 by dabey             #+#    #+#             */
-/*   Updated: 2022/12/15 19:23:22 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/21 15:53:35 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,17 +98,17 @@ int	main(int argc, char **argv, char **env)
 	// char		**tempotab;
 	// t_envlist	*tempo;
 
-	(void)argc;
 	(void)argv;
 	buffer = NULL;
 	list = NULL;
 	str_cmd = NULL;
 	// list->envlist = NULL;
 	tempoline = NULL;
-	if (argv[1] != NULL)
+	if (argc != 1)
 	{
 		printf("error : too many arguments\n");
-		return(1);
+		g_status = 1;
+		exit(1);
 	}
 	using_history();
 	envlist_first = make_env(env, list);
@@ -117,18 +117,18 @@ int	main(int argc, char **argv, char **env)
 		add_history(buffer);
 		if (check_basic_error(buffer) != 1)
 		{
-			free_list_env(list->envlist);
+			free_list_env(envlist_first);
 			free_list(list);
 			return (0);
 		}
 		str_cmd = ft_split_pipe(buffer, '|');
 		str_cmd = expand_dollar(envlist_first, str_cmd);
-		int k = 0;
-		while (str_cmd[k])
-		{
-			printf("pipe ==== <%s>\n", str_cmd[k]);
-			k++;
-		}
+		// int k = 0;
+		// while (str_cmd[k])
+		// {
+		// 	printf("pipe ==== <%s>\n", str_cmd[k]);
+		// 	k++;
+		// }
 		i = 0;
 		while(str_cmd[i] != 0)
 		{
@@ -172,8 +172,8 @@ int	main(int argc, char **argv, char **env)
 		{
 			list->envlist = built_in_cd(list->envlist, buffer);
 		}
-		else
-			exec(buffer,env);//, envlist, env); //gerer si env est vide... // SHLVL quand ./minishell
+		// else
+		// 	exec(buffer,env);//, envlist, env); //gerer si env est vide... // SHLVL quand ./minishell
 		free(buffer);
 		tmp = list;
 		// while (tmp != 0)

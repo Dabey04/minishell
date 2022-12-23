@@ -6,7 +6,7 @@
 /*   By: dabey <dabey@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 22:01:32 by dabey             #+#    #+#             */
-/*   Updated: 2022/12/17 20:23:18 by dabey            ###   ########.fr       */
+/*   Updated: 2022/12/23 19:24:04 by dabey            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,33 +14,33 @@
 //$test
 #include "../includes/minishell.h"
 
-char	*ft_new_cmd(char *line, char *str_d, int index, int j)
+char	*ft_new_cmd(char *line, char *str_d, int j)
 {
 	int		i;
 	int		k;
+	int		x;
 	int		len_t;
-	int		len_d;
 	char	*str_1;
 
 	i = 0;
 	k = 0;
-	len_t = ft_strlen(line);
-	len_d =  ft_strlen(str_d);
-	str_1 = malloc(sizeof(char) * (index + len_d + len_t - j + 1));
+	x = 0;
+	len_t = ft_strlen(line) + ft_strlen(str_d);
+	str_1 = malloc(sizeof(char) * (len_t - j + 1));
 	if (!str_1)
 		return (NULL);
 	while (line[i])
 	{
-		if (line[i] != '$')
-		{
-			while (line[i] && line[i] != '$')
+		while (line[i] && line[i] != '$')
 				str_1[k++] = line[i++];
-		}
+			
 		if (line[i] == '$')
 		{
-			while(line[++i] && line[i] != ' ' && line[i] != '\"'
-				&& line[i] != '\'')
-				str_1[k++] = line[i++];
+			i = i + (j);
+			j = 0;
+			while (str_d[j])
+				str_1[k++] = str_d[j++];
+			// printf("i = %d et j = %d\n", i,j);
 		}
 		while (line[i])
 			str_1[k++] = line[i++];
@@ -119,15 +119,14 @@ char	*get_env_line_dollar(t_envlist *envlist, char *str_d)
 	lineresult = NULL;
 	lenline = ft2_strlen(str_d); //useless?
 	envlist = findline2(envlist, str_d);//pas besoin de malloc line
-	printf("cutlineresult = %s\n", envlist->line);
 	if (envlist)
 	{
 		lineresult = cutline(envlist->line);
-		printf("cutlineresult = %s\n", lineresult);
-//		lineresult = removequote(lineresult);
+		lineresult = removequote(lineresult);
 	}
 	// printf("lineresult = %s\n", lineresult);
 	free(str_d);
+	str_d = NULL;
 	return (lineresult);
 }
 
@@ -145,14 +144,13 @@ char	first_quote(char *line, int i)
 				first_q = '\'';
 			else
 				first_q = '\"';
+			j++;
 			while (line[j] && j < i && line[j] != first_q)
 				j++;
 			if (line[j] == first_q)
 				first_q = '\0';
-			else {
-				// printf("ca passe\n");
+			else
 				return (first_q);
-			}
 		}
 		j++;
 	}
@@ -162,6 +160,7 @@ char	first_quote(char *line, int i)
 char	*find_expand_dollar(t_envlist *envlist, char *line)
 {
 	int		i;
+	int		x;
 	int		j;
 	int		k;
 	char	*str_d;
@@ -169,33 +168,37 @@ char	*find_expand_dollar(t_envlist *envlist, char *line)
 	i = 0;
 	j = 0;
 	k = 0;
-	(void)envlist;
+	x = 0;
 	str_d = NULL;
 	while (line[i])
 	{
-		// replace = 0;
-		if (line[i] == '$')//test "$HOME"
+		if (line[i] == '\'')
+			i = close_quote(line, i);
+		else if (line[i] == '$')
 		{
-			if (first_quote(line, i - 1) == '\"'
-				|| first_quote(line, i - 1) == 0) //faut il mettre '\0'
+			j = ++i;
+			while (line[j] && line[j] != ' ' && line[j] != '\''
+			&& line[j] != '\"')
+				j++;
+			str_d = malloc(sizeof(char) * (j - i) + 1);
+			x = j - i + 1;
+			j = i;
+			while (line[j] && line[j] != ' ' && line[j] != '\"'
+				&& line[j] != '\'')
+				str_d[k++] = line[j++];
+			str_d[k] = '\0';
+			str_d = get_env_line_dollar(envlist ,str_d);
+			if (str_d)
 			{
-				// printf("passe dans if de find_expd\n");
-				j = ++i;// i = 7  
-				while (line[j] && line[j] != ' ')// && line[++j] != '\'' && line[++j] != '\"')
-					j++;//j = 11;
-				// printf("j - i = %d\n", j - i + 1);
-				str_d = malloc(sizeof(char) * (j - i) + 1);
-				j = i;
-				while (line[j] && line[j] != ' ' && line[j] != '\"'
-					&& line[j] != '\'')
-					str_d[k++] = line[j++];
-				str_d[k] = '\0';
-				str_d = get_env_line_dollar(envlist ,str_d);
-				str_d = ft_new_cmd(line, str_d, i, j);
-				printf("ft_new_cmd =%s.\n" , str_d);
-				// free(line);
-				// printf("str_d =%s.\n" , str_d);
-				return (str_d);
+				str_d = ft_new_cmd(line, str_d, x);
+				free(line);
+				line = str_d;
+			}
+			else
+			{
+				str_d = delete_dollar(line, i);
+				free(line);
+				line = str_d;
 			}
 		}
 		else
@@ -211,12 +214,12 @@ char	**expand_dollar(t_envlist *envlist ,char **str_cmd)
 	if (!str_cmd)
 		return (NULL);
 	i = 0;
-	// while (str_cmd[i])
-	// {
+	while (str_cmd[i])
+	{
 		str_cmd[i] = find_expand_dollar(envlist, str_cmd[i]);
-		// printf("str1 [%d]=%s.\n", i , str_cmd[i]);
-	// 	i++;
-	// }
+		printf("str1 [%d]=%s.\n", i , str_cmd[i]);
+		i++;
+	}
 	return (str_cmd);
 }
 
